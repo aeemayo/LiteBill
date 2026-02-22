@@ -1,0 +1,12 @@
+{
+  "name": "contracts",
+  "version": "1.0.0",
+  "description": "LiteBill smart contracts (Foundry)",
+  "private": true,
+  "scripts": {
+    "build": "forge build",
+    "test": "forge test",
+    "deploy:litvm": "bash -c 'set -a; source .env; set +a; forge script script/DeployLiteBill.s.sol:DeployLiteBill --rpc-url \"$LITVM_RPC_URL\" --broadcast'"
+  },
+  "license": "ISC"
+}
