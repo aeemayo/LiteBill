@@ -1,39 +1,53 @@
-# LiteBill – Group Expense Settlement with Litecoin on LitVM
+# LiteBill
 
-LiteBill is a consumer payment app that lets groups split and settle expenses with LTC (zkLTC on LitVM).
+Split and settle group expenses using zkLTC on [LitVM LiteForge](https://liteforge.explorer.caldera.xyz) — a Litecoin Layer-2.
 
-## Workspace Structure
+Connect your wallet, create a bill, share the link, and let your group pay their share. The contract auto-settles to the payee once everyone has contributed.
 
-- `contracts/`: Foundry project with `LiteBill.sol`, Solidity tests, and deployment script.
-- `frontend/`: React + Vite UI for wallet connection, bill creation, contribution, and status tracking.
+## Structure
 
-## Quick Start
+```
+contracts/   → Solidity smart contract (Foundry)
+frontend/    → React + Vite UI
+```
 
-### 1) Contracts
+## Getting Started
+
+### Deploy the contract
 
 ```bash
 cd contracts
-cp .env.example .env
+cp .env.example .env   # fill in your private key
 forge build
 forge test
-forge script script/DeployLiteBill.s.sol:DeployLiteBill --rpc-url $LITVM_RPC_URL --broadcast
+forge script script/DeployLiteBill.s.sol:DeployLiteBill \
+  --rpc-url $LITVM_RPC_URL --broadcast
 ```
 
-### 2) Frontend
+### Run the frontend
 
 ```bash
 cd frontend
+cp .env.example .env   # paste deployed contract address into VITE_LITEBILL_ADDRESS
 npm install
-cp .env.example .env
 npm run dev
 ```
 
-Open the app, set `VITE_LITEBILL_ADDRESS`, connect MetaMask, and start creating bills.
+## What it does
 
-## Implemented Features
+- **Create a bill** — set a payee, total amount in zkLTC, and how many people are splitting it
+- **Contribute** — each participant pays their equal share
+- **Auto-settle** — funds are released to the payee once fully funded
+- **Cancel & refund** — creator can cancel; contributors can claim refunds on expired bills
+- **Shareable links** — every bill gets a `?billId=` URL you can send to participants
+- **Live updates** — the UI listens for on-chain events and refreshes automatically
 
-- Create bill with payee, total amount, and participant count.
-- Equal-share contribution tracking (`contribute`).
-- Automatic settlement when fully funded.
-- Bill status retrieval (`getBillStatus`).
-- Shareable bill links (`?billId=<id>`).
+## Network
+
+| | |
+|---|---|
+| Network | LitVM LiteForge |
+| Chain ID | 4441 |
+| Currency | zkLTC |
+| RPC | `https://liteforge.rpc.caldera.xyz/http` |
+| Explorer | `https://liteforge.explorer.caldera.xyz` |
