@@ -1,13 +1,14 @@
-import { useToast }           from './hooks/useToast'
-import { ToastContainer }     from './components/Toast'
-import { useWallet }        from './hooks/useWallet'
-import { useContract }      from './hooks/useContract'
-import { ErrorBoundary }    from './components/ErrorBoundary'
-import { ConnectionCard }   from './components/ConnectionCard'
-import { CreateBillCard }   from './components/CreateBillCard'
-import { BillActionsCard }  from './components/BillActionsCard'
-import { BillStatusCard }   from './components/BillStatusCard'
-import { BillSkeleton }     from './components/BillSkeleton'
+import { useToast }          from './hooks/useToast'
+import { ToastContainer }    from './components/Toast'
+import { useWallet }         from './hooks/useWallet'
+import { useContract }       from './hooks/useContract'
+import { ErrorBoundary }     from './components/ErrorBoundary'
+import { Navbar }            from './components/Navbar'
+import { ConnectionCard }    from './components/ConnectionCard'
+import { CreateBillCard }    from './components/CreateBillCard'
+import { BillActionsCard }   from './components/BillActionsCard'
+import { BillStatusCard }    from './components/BillStatusCard'
+import { BillSkeleton }      from './components/BillSkeleton'
 
 function App() {
   const { toasts, addToast, removeToast } = useToast()
@@ -28,24 +29,26 @@ function App() {
 
   return (
     <>
+      {/* Sticky top navbar */}
+      <ErrorBoundary>
+        <Navbar
+          walletAddress={walletAddress}
+          connecting={connecting}
+          onConnect={connectWallet}
+        />
+      </ErrorBoundary>
+
       <main className="app-shell">
-        {/* Header */}
+        {/* Hero header */}
         <header className="app-header">
-          <div className="app-logo">
-            <div className="app-logo-icon">Ł</div>
-            <h1 className="app-title">LiteBill</h1>
-          </div>
           <p className="app-subtitle">Group expense settlement with Litecoin on LitVM</p>
         </header>
 
-        {/* Connection */}
+        {/* Contract address settings */}
         <ErrorBoundary>
           <ConnectionCard
             contractAddress={contractAddress}
             setContractAddress={setContractAddress}
-            walletAddress={walletAddress}
-            connecting={connecting}
-            onConnect={connectWallet}
           />
         </ErrorBoundary>
 

@@ -80,12 +80,79 @@ body {
 }
 
 /* ================================================================
+   NAVBAR
+================================================================ */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--sp-6);
+  height: 60px;
+  background: rgba(6, 10, 18, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.navbar-logo {
+  width: 34px; height: 34px;
+  background: var(--accent-grad);
+  border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.05rem; font-weight: 700; color: #fff;
+  box-shadow: 0 2px 12px rgba(99,102,241,0.4);
+  flex-shrink: 0;
+}
+
+.navbar-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: var(--accent-grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
+}
+
+.navbar-actions { display: flex; align-items: center; gap: var(--sp-3); }
+
+.navbar-wallet-btn {
+  padding: 0.42rem var(--sp-4);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.navbar-wallet-connected {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  background: var(--green-bg);
+  border-color: rgba(34, 197, 94, 0.25);
+  color: var(--green);
+  font-family: 'Courier New', monospace;
+}
+.navbar-wallet-connected:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+/* ================================================================
    LAYOUT
 ================================================================ */
 .app-shell {
   max-width: 720px;
   margin: 0 auto;
-  padding: var(--sp-8) var(--sp-4) 5rem;
+  padding: var(--sp-6) var(--sp-4) 5rem;
 }
 
 /* ================================================================
@@ -93,40 +160,14 @@ body {
 ================================================================ */
 .app-header {
   text-align: center;
-  margin-bottom: var(--sp-10);
+  margin-bottom: var(--sp-6);
   animation: fadeSlideUp 0.55s ease both;
-}
-
-.app-logo {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-3);
-  margin-bottom: var(--sp-3);
-}
-
-.app-logo-icon {
-  width: 44px; height: 44px;
-  background: var(--accent-grad);
-  border-radius: var(--r-lg);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.4rem;
-  box-shadow: 0 4px 20px rgba(99,102,241,0.45);
-}
-
-.app-title {
-  font-size: 2.1rem;
-  font-weight: 700;
-  background: var(--accent-grad);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.025em;
 }
 
 .app-subtitle {
   color: var(--text-muted);
   font-size: 0.95rem;
-  margin-top: var(--sp-1);
+  margin: 0;
 }
 
 /* ================================================================
