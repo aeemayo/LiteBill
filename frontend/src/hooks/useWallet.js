@@ -34,7 +34,7 @@ export function useWallet(addToast) {
             chainId: chainHex,
             chainName: LITVM_CHAIN.chainName,
             nativeCurrency: LITVM_CHAIN.nativeCurrency,
-            rpcUrls: [LITVM_CHAIN.rpcUrl],
+            rpcUrls: [LITVM_CHAIN.rpcUrl, LITVM_CHAIN.wsUrl].filter(Boolean),
             blockExplorerUrls: [LITVM_CHAIN.explorerUrl],
           }],
         })

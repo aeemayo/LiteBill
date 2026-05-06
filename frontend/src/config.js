@@ -1,8 +1,9 @@
 export const LITVM_CHAIN = {
-  chainId: Number(import.meta.env.VITE_LITVM_CHAIN_ID || 1890),
-  chainName: import.meta.env.VITE_LITVM_CHAIN_NAME || 'LitVM Testnet',
-  rpcUrl: import.meta.env.VITE_LITVM_RPC_URL || 'https://rpc.testnet.litvm.com',
-  explorerUrl: import.meta.env.VITE_LITVM_EXPLORER_URL || 'https://explorer.testnet.litvm.com',
+  chainId: Number(import.meta.env.VITE_LITVM_CHAIN_ID || 4441),
+  chainName: import.meta.env.VITE_LITVM_CHAIN_NAME || 'LitVM LiteForge',
+  rpcUrl: import.meta.env.VITE_LITVM_RPC_URL || 'https://liteforge.rpc.caldera.xyz/http',
+  wsUrl: import.meta.env.VITE_LITVM_WS_URL || 'wss://liteforge.rpc.caldera.xyz/ws',
+  explorerUrl: import.meta.env.VITE_LITVM_EXPLORER_URL || 'https://liteforge.explorer.caldera.xyz',
   nativeCurrency: {
     name: import.meta.env.VITE_LITVM_CURRENCY_NAME || 'zkLTC',
     symbol: import.meta.env.VITE_LITVM_CURRENCY_SYMBOL || 'zkLTC',
