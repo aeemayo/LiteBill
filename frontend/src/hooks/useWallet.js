@@ -107,11 +107,22 @@ export function useWallet(addToast) {
   }, [getSignerContract, addToast])
 
   // ── Disconnect ────────────────────────────────────────────────────
-  // EIP-1102 has no programmatic revoke API; we clear local state.
-  // The user will be prompted to re-approve on next connect.
-  const disconnectWallet = useCallback(() => {
+  // wallet_revokePermissions (EIP-2255) actually revokes eth_accounts in
+  // MetaMask so the site loses connection at the wallet level too.
+  // Falls back gracefully for wallets that don't support it.
+  const disconnectWallet = useCallback(async () => {
+    if (window.ethereum) {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_revokePermissions',
+          params: [{ eth_accounts: {} }],
+        })
+      } catch {
+        // Wallet doesn't support revokePermissions — clear local state only
+      }
+    }
     setWalletAddress('')
-    addToast({ type: 'info', msg: 'Wallet disconnected. Connect again to interact.' })
+    addToast({ type: 'info', msg: 'Wallet disconnected.' })
   }, [addToast])
 
   return {
