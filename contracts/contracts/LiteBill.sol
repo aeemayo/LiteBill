@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.28;
 
-contract LiteBill {
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+
+contract LiteBill is ReentrancyGuard {
     struct Bill {
         address creator;
         address payable payee;
@@ -72,7 +74,7 @@ contract LiteBill {
         uint256 _totalAmount,
         uint256 _participantCount,
         uint256 _expiresAt
-    ) internal returns (uint256) {
+    ) internal returns (uint256) { 
         require(_payee != address(0), "Invalid payee");
         require(_participantCount > 0, "Invalid participant count");
         require(_totalAmount > 0, "Total amount must be greater than 0");
@@ -94,7 +96,7 @@ contract LiteBill {
             participantCount: _participantCount,
             contributors: 0,
             settled: false,
-            cancelled: false,
+ cancelled: false,
             expiresAt: _expiresAt
         });
 
@@ -110,7 +112,7 @@ contract LiteBill {
         return billCounter;
     }
 
-    function contribute(uint256 _billId) external payable {
+    function contribute(uint256 _billId) external payable nonReentrant {
         Bill storage bill = bills[_billId];
 
         require(bill.creator != address(0), "Bill not found");
@@ -134,9 +136,9 @@ contract LiteBill {
         ) {
             bill.settled = true;
             uint256 payout = bill.totalContributed;
+            emit BillSettled(_billId, payout);
             (bool sent, ) = bill.payee.call{value: payout}("");
             require(sent, "Payout failed");
-            emit BillSettled(_billId, payout);
         }
     }
 
@@ -151,11 +153,11 @@ contract LiteBill {
         emit BillCancelled(_billId);
     }
 
-    function claimRefund(uint256 _billId) external {
+    function claimRefund(uint256 _billId) external nonReentrant {
         Bill storage bill = bills[_billId];
         require(bill.creator != address(0), "Bill not found");
         require(!bill.settled, "Bill already settled");
-        require(bill.cancelled || _isExpired(bill), "Refund unavailable");
+        require(bill.cancelled || _isExpired(bill), "Railable");
 
         uint256 amount = contributionAmounts[_billId][msg.sender];
         require(amount > 0, "No contribution to refund");
@@ -164,10 +166,9 @@ contract LiteBill {
         bill.totalContributed -= amount;
         bill.contributors -= 1;
 
+        emit RefundClaimed(_billId, msg.sender, amount);
         (bool sent, ) = payable(msg.sender).call{value: amount}("");
         require(sent, "Refund failed");
-
-        emit RefundClaimed(_billId, msg.sender, amount);
     }
 
     function getBillTiming(uint256 _billId)
