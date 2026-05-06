@@ -13,7 +13,7 @@ function App() {
   const { toasts, addToast, removeToast } = useToast()
 
   const {
-    walletAddress, connecting, connectWallet,
+    walletAddress, connecting, connectWallet, disconnectWallet,
     getProviderContract, getSignerContract,
   } = useWallet(addToast)
 
@@ -33,6 +33,7 @@ function App() {
           walletAddress={walletAddress}
           connecting={connecting}
           onConnect={connectWallet}
+          onDisconnect={disconnectWallet}
         />
       </ErrorBoundary>
 

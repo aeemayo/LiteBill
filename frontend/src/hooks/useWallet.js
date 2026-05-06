@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { ethers } from 'ethers'
 import { LITVM_CHAIN } from '../config'
 import { LITEBILL_ABI } from '../litebillAbi'
@@ -11,6 +11,34 @@ export function useWallet(addToast) {
   const [walletAddress, setWalletAddress] = useState('')
   const [connecting, setConnecting] = useState(false)
 
+  // ── Listen for account/chain changes from the wallet ─────────────
+  useEffect(() => {
+    if (!window.ethereum) return
+
+    const handleAccountsChanged = (accounts) => {
+      if (accounts.length === 0) {
+        // User locked MetaMask or removed the account — treat as disconnect
+        setWalletAddress('')
+      } else {
+        setWalletAddress(accounts[0])
+      }
+    }
+
+    const handleChainChanged = () => {
+      // Chain switched — reset so user re-validates on next action
+      setWalletAddress('')
+    }
+
+    window.ethereum.on('accountsChanged', handleAccountsChanged)
+    window.ethereum.on('chainChanged', handleChainChanged)
+
+    return () => {
+      window.ethereum.removeListener('accountsChanged', handleAccountsChanged)
+      window.ethereum.removeListener('chainChanged', handleChainChanged)
+    }
+  }, [])
+
+  // ── Helpers ───────────────────────────────────────────────────────
   const getProviderContract = useCallback(() => {
     if (!window.ethereum) throw new Error('No browser wallet detected. Please install MetaMask.')
     if (!CONTRACT_ADDRESS || !ethers.isAddress(CONTRACT_ADDRESS))
@@ -46,15 +74,23 @@ export function useWallet(addToast) {
   }, [])
 
   const getSignerContract = useCallback(async () => {
-    const { provider } = getProviderContract()
+    if (!window.ethereum) throw new Error('No browser wallet detected. Please install MetaMask.')
+    // Always explicitly request accounts — ensures the wallet popup fires every time
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+    if (!accounts || accounts.length === 0) throw new Error('No accounts returned from wallet.')
     await switchToLitvm()
-    await provider.send('eth_requestAccounts', [])
+    const provider = new ethers.BrowserProvider(window.ethereum)
     const signer = await provider.getSigner()
     const contract = new ethers.Contract(CONTRACT_ADDRESS, LITEBILL_ABI, signer)
     return { provider, signer, contract }
-  }, [getProviderContract, switchToLitvm])
+  }, [switchToLitvm])
 
+  // ── Connect ───────────────────────────────────────────────────────
   const connectWallet = useCallback(async () => {
+    if (!window.ethereum) {
+      addToast({ type: 'error', msg: 'No browser wallet detected. Please install MetaMask.' })
+      return
+    }
     setConnecting(true)
     try {
       const { signer } = await getSignerContract()
@@ -62,16 +98,27 @@ export function useWallet(addToast) {
       setWalletAddress(addr)
       addToast({ type: 'success', msg: 'Wallet connected to LitVM LiteForge.' })
     } catch (err) {
+      // User rejected or error — do not persist a stale address
+      setWalletAddress('')
       addToast({ type: 'error', msg: err.message })
     } finally {
       setConnecting(false)
     }
   }, [getSignerContract, addToast])
 
+  // ── Disconnect ────────────────────────────────────────────────────
+  // EIP-1102 has no programmatic revoke API; we clear local state.
+  // The user will be prompted to re-approve on next connect.
+  const disconnectWallet = useCallback(() => {
+    setWalletAddress('')
+    addToast({ type: 'info', msg: 'Wallet disconnected. Connect again to interact.' })
+  }, [addToast])
+
   return {
     walletAddress,
     connecting,
     connectWallet,
+    disconnectWallet,
     getProviderContract,
     getSignerContract,
   }
