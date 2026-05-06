@@ -81,7 +81,7 @@ export function useContract(contractAddress, getProviderContract, getSignerContr
 
       const receipt = await tx.wait()
       const event = receipt.logs
-        .map(log => { try { return contract.interface.parseLog(log) } catch (_) { return null } })
+        .map(log => { try { return contract.interface.parseLog(log) } catch { return null } })
         .find(e => e?.name === 'BillCreated')
 
       const newId = event?.args?.billId?.toString()
@@ -153,7 +153,7 @@ export function useContract(contractAddress, getProviderContract, getSignerContr
   const stopListeners = useCallback(() => {
     const c = listenerContractRef.current
     if (!c) return
-    try { c.removeAllListeners() } catch (_) { /* already removed or provider gone */ }
+    try { c.removeAllListeners() } catch { /* already removed or provider gone */ }
     listenerContractRef.current = null
   }, [])
 
