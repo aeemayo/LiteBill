@@ -1,4 +1,5 @@
-import { useToast, ToastContainer } from './components/Toast'
+import { useToast }           from './hooks/useToast'
+import { ToastContainer }     from './components/Toast'
 import { useWallet }        from './hooks/useWallet'
 import { useContract }      from './hooks/useContract'
 import { ErrorBoundary }    from './components/ErrorBoundary'

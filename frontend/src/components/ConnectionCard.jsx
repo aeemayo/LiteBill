@@ -1,6 +1,5 @@
 export function ConnectionCard({ contractAddress, setContractAddress, walletAddress, connecting, onConnect }) {
   const short = (addr) => addr ? `${addr.slice(0, 8)}…${addr.slice(-6)}` : ''
-
   return (
     <section className="card" id="connection-card">
       <div className="card-header">
@@ -33,7 +32,7 @@ export function ConnectionCard({ contractAddress, setContractAddress, walletAddr
       {walletAddress ? (
         <div className="wallet-chip">
           <span className="wallet-dot" />
-          <span className="wallet-addr" title={walletAddress}>{walletAddress}</span>
+          <span className="wallet-addr" title={walletAddress}>{short(walletAddress)}</span>
           <button
             className="btn btn-sm"
             style={{ padding: '0.3rem 0.6rem', fontSize: '0.7rem' }}

@@ -32,8 +32,10 @@ export function CreateBillCard({ onCreateBill, loading }) {
     onCreateBill({ payee, totalLtc, participantCount: participants, expiresAt: useExpiry ? expiresAt : null })
   }
 
-  // Min datetime-local = now + 5 min
-  const minDatetime = new Date(Date.now() + 5 * 60 * 1000).toISOString().slice(0, 16)
+  // Computed once on mount — useState initializer avoids calling Date.now() on every render
+  const [minDatetime] = useState(
+    () => new Date(Date.now() + 5 * 60 * 1000).toISOString().slice(0, 16)
+  )
 
   return (
     <section className="card" id="create-bill-card">
