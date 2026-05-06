@@ -38,7 +38,7 @@ function App() {
 
       <main className="app-shell">
         <header className="app-header">
-          <p className="app-subtitle">Group expense settlement with Litecoin on LitVM</p>
+          <p className="app-subtitle">Group expense settlement with zkLTC on LitVM</p>
         </header>
 
         {/* Create Bill */}
