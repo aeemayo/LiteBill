@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { ethers } from 'ethers'
 
-export function useContract(contractAddress, getProviderContract, getSignerContract, addToast) {
+export function useContract(getProviderContract, getSignerContract, addToast) {
   const [bill, setBill] = useState(null)
   const [billIdInput, setBillIdInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -158,7 +158,7 @@ export function useContract(contractAddress, getProviderContract, getSignerContr
   }, [])
 
   const startListeners = useCallback((billId) => {
-    if (!billId || !contractAddress) return
+    if (!billId) return
     stopListeners()
 
     let contract
@@ -178,15 +178,15 @@ export function useContract(contractAddress, getProviderContract, getSignerContr
     contract.on('ContributionMade', (id) => refresh(id))
     contract.on('BillSettled',      (id) => refresh(id))
     contract.on('BillCancelled',    (id) => refresh(id))
-  }, [contractAddress, getProviderContract, fetchBill, stopListeners])
+  }, [getProviderContract, fetchBill, stopListeners])
 
   // Start/restart listeners whenever the viewed bill or contract changes
   useEffect(() => {
-    if (billIdInput && contractAddress) {
+    if (billIdInput) {
       startListeners(billIdInput)
     }
     return stopListeners
-  }, [billIdInput, contractAddress, startListeners, stopListeners])
+  }, [billIdInput, startListeners, stopListeners])
 
   const billLink = billIdInput
     ? (() => {

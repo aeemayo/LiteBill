@@ -4,7 +4,6 @@ import { useWallet }         from './hooks/useWallet'
 import { useContract }       from './hooks/useContract'
 import { ErrorBoundary }     from './components/ErrorBoundary'
 import { Navbar }            from './components/Navbar'
-import { ConnectionCard }    from './components/ConnectionCard'
 import { CreateBillCard }    from './components/CreateBillCard'
 import { BillActionsCard }   from './components/BillActionsCard'
 import { BillStatusCard }    from './components/BillStatusCard'
@@ -14,8 +13,7 @@ function App() {
   const { toasts, addToast, removeToast } = useToast()
 
   const {
-    walletAddress, contractAddress, setContractAddress,
-    connecting, connectWallet,
+    walletAddress, connecting, connectWallet,
     getProviderContract, getSignerContract,
   } = useWallet(addToast)
 
@@ -23,13 +21,13 @@ function App() {
     bill, billIdInput, setBillIdInput, billLink,
     loading, isListening,
     fetchBill, createBill, contribute, cancelBill, claimRefund,
-  } = useContract(contractAddress, getProviderContract, getSignerContract, addToast)
+  } = useContract(getProviderContract, getSignerContract, addToast)
 
   const showSkeleton = loading && !bill
 
   return (
     <>
-      {/* Sticky top navbar */}
+      {/* Sticky top navbar with wallet connect */}
       <ErrorBoundary>
         <Navbar
           walletAddress={walletAddress}
@@ -39,18 +37,9 @@ function App() {
       </ErrorBoundary>
 
       <main className="app-shell">
-        {/* Hero header */}
         <header className="app-header">
           <p className="app-subtitle">Group expense settlement with Litecoin on LitVM</p>
         </header>
-
-        {/* Contract address settings */}
-        <ErrorBoundary>
-          <ConnectionCard
-            contractAddress={contractAddress}
-            setContractAddress={setContractAddress}
-          />
-        </ErrorBoundary>
 
         {/* Create Bill */}
         <ErrorBoundary>

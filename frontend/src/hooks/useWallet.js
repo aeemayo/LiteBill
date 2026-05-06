@@ -3,21 +3,22 @@ import { ethers } from 'ethers'
 import { LITVM_CHAIN } from '../config'
 import { LITEBILL_ABI } from '../litebillAbi'
 
+// Contract address is set at build time via VITE_LITEBILL_ADDRESS in .env
+// It is intentionally not user-editable or exposed in the UI.
+const CONTRACT_ADDRESS = import.meta.env.VITE_LITEBILL_ADDRESS || ''
+
 export function useWallet(addToast) {
   const [walletAddress, setWalletAddress] = useState('')
-  const [contractAddress, setContractAddress] = useState(
-    import.meta.env.VITE_LITEBILL_ADDRESS || ''
-  )
   const [connecting, setConnecting] = useState(false)
 
   const getProviderContract = useCallback(() => {
-    if (!window.ethereum) throw new Error('MetaMask is required')
-    if (!contractAddress || !ethers.isAddress(contractAddress))
-      throw new Error('Enter a valid LiteBill contract address')
+    if (!window.ethereum) throw new Error('No browser wallet detected. Please install MetaMask.')
+    if (!CONTRACT_ADDRESS || !ethers.isAddress(CONTRACT_ADDRESS))
+      throw new Error('LiteBill contract address is not configured. Set VITE_LITEBILL_ADDRESS in .env and rebuild.')
     const provider = new ethers.BrowserProvider(window.ethereum)
-    const contract = new ethers.Contract(contractAddress, LITEBILL_ABI, provider)
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, LITEBILL_ABI, provider)
     return { provider, contract }
-  }, [contractAddress])
+  }, [])
 
   const switchToLitvm = useCallback(async () => {
     const chainHex = `0x${LITVM_CHAIN.chainId.toString(16)}`
@@ -49,9 +50,9 @@ export function useWallet(addToast) {
     await switchToLitvm()
     await provider.send('eth_requestAccounts', [])
     const signer = await provider.getSigner()
-    const contract = new ethers.Contract(contractAddress, LITEBILL_ABI, signer)
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, LITEBILL_ABI, signer)
     return { provider, signer, contract }
-  }, [getProviderContract, switchToLitvm, contractAddress])
+  }, [getProviderContract, switchToLitvm])
 
   const connectWallet = useCallback(async () => {
     setConnecting(true)
@@ -59,7 +60,7 @@ export function useWallet(addToast) {
       const { signer } = await getSignerContract()
       const addr = await signer.getAddress()
       setWalletAddress(addr)
-      addToast({ type: 'success', msg: 'Wallet connected to LitVM.' })
+      addToast({ type: 'success', msg: 'Wallet connected to LitVM LiteForge.' })
     } catch (err) {
       addToast({ type: 'error', msg: err.message })
     } finally {
@@ -69,8 +70,6 @@ export function useWallet(addToast) {
 
   return {
     walletAddress,
-    contractAddress,
-    setContractAddress,
     connecting,
     connectWallet,
     getProviderContract,
