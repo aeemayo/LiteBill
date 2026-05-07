@@ -86,7 +86,7 @@ export function History({ getProviderContract, walletAddress }) {
   }, [getProviderContract, walletAddress])
 
   return (
-    <div className="glass-card" style={{ maxWidth: '800px', margin: '0 auto' }}>
+    <div className="glass-card" style={{ maxWidth: '800px', margin: '0 auto', minHeight: '50vh', marginBottom: '4rem' }}>
       <h2 className="section-title" style={{ fontSize: '32px' }}>Transaction History</h2>
       
       {!walletAddress ? (
