@@ -13,7 +13,7 @@ export function CreateBillCard({ onCreateBill, loading }) {
     const total = parseFloat(totalLtc)
     const count = parseInt(participants, 10)
     if (total > 0 && count > 0 && total % count === 0) {
-      return `Each participant pays ${(total / count).toFixed(6).replace(/\.?0+$/, '')} zkLTC`
+      return `Each participant pays ${(total / count).toFixed(6).replace(/\.?0+$/, '')} zKLTC`
     }
     if (total > 0 && count > 0) return 'Total must divide equally among participants'
     return null
@@ -23,7 +23,7 @@ export function CreateBillCard({ onCreateBill, loading }) {
     if (!payee || !ethers.isAddress(payee))
       return alert('Enter a valid payee address.')
     if (!totalLtc || Number(totalLtc) <= 0)
-      return alert('Enter a valid total zkLTC amount.')
+      return alert('Enter a valid total zKLTC amount.')
     if (!participants || Number(participants) <= 0)
       return alert('Enter a valid participant count.')
     if (useExpiry && !expiresAt)
@@ -58,7 +58,7 @@ export function CreateBillCard({ onCreateBill, loading }) {
 
       <div className="grid-2">
         <div className="field">
-          <label className="field-label" htmlFor="total-ltc">Total Amount (zkLTC)</label>
+          <label className="field-label" htmlFor="total-ltc">Total Amount (zKLTC)</label>
           <input
             id="total-ltc"
             className="field-input"
