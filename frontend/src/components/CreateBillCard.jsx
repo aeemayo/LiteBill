@@ -8,13 +8,11 @@ export function CreateBillCard({ onCreateBill, loading }) {
   const [useExpiry, setUseExpiry]       = useState(false)
   const [expiresAt, setExpiresAt]       = useState('')
 
-  // Live share preview
   const sharePreview = useMemo(() => {
     const total = parseFloat(totalLtc)
     const count = parseInt(participants, 10)
-    if (total > 0 && count > 0 && total % count === 0) {
+    if (total > 0 && count > 0 && total % count === 0)
       return `Each participant pays ${(total / count).toFixed(6).replace(/\.?0+$/, '')} zKLTC`
-    }
     if (total > 0 && count > 0) return 'Total must divide equally among participants'
     return null
   }, [totalLtc, participants])
@@ -28,22 +26,16 @@ export function CreateBillCard({ onCreateBill, loading }) {
       return alert('Enter a valid participant count.')
     if (useExpiry && !expiresAt)
       return alert('Set an expiry date/time or disable the expiry toggle.')
-
     onCreateBill({ payee, totalLtc, participantCount: participants, expiresAt: useExpiry ? expiresAt : null })
   }
 
-  // Computed once on mount — useState initializer avoids calling Date.now() on every render
   const [minDatetime] = useState(
     () => new Date(Date.now() + 5 * 60 * 1000).toISOString().slice(0, 16)
   )
 
   return (
-    <section className="card" id="create-bill-card">
-      <div className="card-header">
-        <div className="card-icon">📋</div>
-        <h2 className="card-title">Create Bill</h2>
-      </div>
-
+    <div className="glass-card">
+      {/* Payee */}
       <div className="field">
         <label className="field-label" htmlFor="payee-address">Payee Address</label>
         <input
@@ -51,11 +43,13 @@ export function CreateBillCard({ onCreateBill, loading }) {
           className="field-input"
           value={payee}
           onChange={(e) => setPayee(e.target.value.trim())}
-          placeholder="0x…"
+          placeholder="0x..."
           spellCheck={false}
+          autoComplete="off"
         />
       </div>
 
+      {/* Amount + Participants */}
       <div className="grid-2">
         <div className="field">
           <label className="field-label" htmlFor="total-ltc">Total Amount (zKLTC)</label>
@@ -67,7 +61,7 @@ export function CreateBillCard({ onCreateBill, loading }) {
             step="any"
             value={totalLtc}
             onChange={(e) => setTotalLtc(e.target.value)}
-            placeholder="1.5"
+            placeholder="0.00"
           />
         </div>
         <div className="field">
@@ -80,14 +74,12 @@ export function CreateBillCard({ onCreateBill, loading }) {
             step="1"
             value={participants}
             onChange={(e) => setParticipants(e.target.value)}
-            placeholder="3"
+            placeholder="2"
           />
         </div>
       </div>
 
-      {sharePreview && (
-        <div className="share-preview">{sharePreview}</div>
-      )}
+      {sharePreview && <div className="share-preview">{sharePreview}</div>}
 
       {/* Expiry toggle */}
       <div
@@ -97,7 +89,7 @@ export function CreateBillCard({ onCreateBill, loading }) {
         aria-checked={useExpiry}
         onClick={() => setUseExpiry(v => !v)}
       >
-        <span className="toggle-label">⏰ Set expiry deadline</span>
+        <span className="toggle-label">Set expiry deadline</span>
         <div className={`toggle-track${useExpiry ? ' on' : ''}`}>
           <div className="toggle-knob" />
         </div>
@@ -115,7 +107,7 @@ export function CreateBillCard({ onCreateBill, loading }) {
             onChange={(e) => setExpiresAt(e.target.value)}
           />
           <span className="field-hint">
-            After this time, the bill can no longer be contributed to and participants may claim refunds.
+            After this time the bill can no longer be contributed to and participants may claim refunds.
           </span>
         </div>
       )}
@@ -125,10 +117,9 @@ export function CreateBillCard({ onCreateBill, loading }) {
         className="btn btn-primary"
         onClick={handleSubmit}
         disabled={loading}
-        style={{ width: '100%', marginTop: '0.25rem' }}
       >
-        {loading ? '⏳ Creating…' : '✦ Create Bill'}
+        {loading ? 'Creating…' : 'Create Bill'}
       </button>
-    </section>
+    </div>
   )
 }
