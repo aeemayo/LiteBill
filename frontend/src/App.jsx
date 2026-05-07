@@ -8,6 +8,11 @@ import { CreateBillCard }    from './components/CreateBillCard'
 import { BillActionsCard }   from './components/BillActionsCard'
 import { BillStatusCard }    from './components/BillStatusCard'
 import { BillSkeleton }      from './components/BillSkeleton'
+import { useState, useEffect } from 'react'
+import { Documentation }     from './pages/Documentation'
+import { Privacy }           from './pages/Privacy'
+import { Terms }             from './pages/Terms'
+import { Support }           from './pages/Support'
 
 function App() {
   const { toasts, addToast, removeToast } = useToast()
@@ -25,18 +30,26 @@ function App() {
 
   const showSkeleton = loading && !bill
 
-  return (
-    <>
-      <ErrorBoundary>
-        <Navbar
-          walletAddress={walletAddress}
-          connecting={connecting}
-          onConnect={connectWallet}
-          onDisconnect={disconnectWallet}
-        />
-      </ErrorBoundary>
+  const [route, setRoute] = useState(window.location.hash.replace('#', '') || 'home')
+  useEffect(() => {
+    const handleHashChange = () => setRoute(window.location.hash.replace('#', '') || 'home')
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
 
-      <div className="app-shell">
+  let content;
+  if (route === 'docs') {
+    content = <div className="animate-in"><Documentation /></div>
+  } else if (route === 'privacy') {
+    content = <div className="animate-in"><Privacy /></div>
+  } else if (route === 'terms') {
+    content = <div className="animate-in"><Terms /></div>
+  } else if (route === 'support') {
+    content = <div className="animate-in"><Support /></div>
+  } else {
+    // Default Home view
+    content = (
+      <>
         {/* Hero */}
         <header className="app-header animate-in">
           <h1 className="app-hero-title">LiteBill Protocol</h1>
@@ -79,6 +92,23 @@ function App() {
             </ErrorBoundary>
           </div>
         )}
+      </>
+    )
+  }
+
+  return (
+    <>
+      <ErrorBoundary>
+        <Navbar
+          walletAddress={walletAddress}
+          connecting={connecting}
+          onConnect={connectWallet}
+          onDisconnect={disconnectWallet}
+        />
+      </ErrorBoundary>
+
+      <div className="app-shell">
+        {content}
       </div>
 
       {/* Footer */}
@@ -87,11 +117,11 @@ function App() {
           <div className="footer-brand">LiteBill</div>
           <div className="footer-copy">© 2026 LiteBill Protocol. Secured by zK-Proofs.</div>
           <div className="footer-links">
-            <a href="#" className="footer-link">Documentation</a>
-            <a href="#" className="footer-link">Privacy</a>
-            <a href="#" className="footer-link">Terms</a>
-            <a href="https://github.com" target="_blank" rel="noreferrer" className="footer-link">Github</a>
-            <a href="#" className="footer-link">Support</a>
+            <a href="#docs" className="footer-link">Documentation</a>
+            <a href="#privacy" className="footer-link">Privacy</a>
+            <a href="#terms" className="footer-link">Terms</a>
+            <a href="https://github.com/aeemayo" target="_blank" rel="noreferrer" className="footer-link">Github</a>
+            <a href="#support" className="footer-link">Support</a>
           </div>
         </div>
       </footer>

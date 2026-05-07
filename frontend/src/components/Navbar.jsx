@@ -23,7 +23,7 @@ export function Navbar({ walletAddress, connecting, onConnect, onDisconnect }) {
       <div className="navbar-brand">LiteBill</div>
 
       <div className="navbar-nav">
-        <a href="#" className="navbar-nav-link active">Dashboard</a>
+        <a href="#home" className="navbar-nav-link active">Dashboard</a>
         <a href="#" className="navbar-nav-link">History</a>
       </div>
 
