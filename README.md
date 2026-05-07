@@ -7,7 +7,7 @@ Connect your wallet, create a bill, share the link, and let your group pay their
 ## Structure
 
 ```
-contracts/   → Solidity smart contract (Foundry)
+contracts/   → Solidity smart contract (Deployed via remix-IDE)
 frontend/    → React + Vite UI
 ```
 
