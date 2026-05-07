@@ -85,7 +85,7 @@ function App() {
       <footer className="app-footer">
         <div className="footer-inner">
           <div className="footer-brand">LiteBill</div>
-          <div className="footer-copy">© 2025 LiteBill Protocol. Secured by zK-Proofs.</div>
+          <div className="footer-copy">© 2026 LiteBill Protocol. Secured by zK-Proofs.</div>
           <div className="footer-links">
             <a href="#" className="footer-link">Documentation</a>
             <a href="#" className="footer-link">Privacy</a>
