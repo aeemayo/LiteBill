@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 
-export function Navbar({ walletAddress, connecting, onConnect, onDisconnect }) {
+export function Navbar({ walletAddress, connecting, onConnect, onDisconnect, route }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef(null)
 
@@ -18,13 +18,15 @@ export function Navbar({ walletAddress, connecting, onConnect, onDisconnect }) {
   const handleDisconnect = () => { setMenuOpen(false); onDisconnect() }
   const copyAddress = () => { navigator.clipboard.writeText(walletAddress); setMenuOpen(false) }
 
+  const isHome = !route || route === 'home'
+
   return (
     <nav className="navbar" role="navigation" aria-label="Site navigation">
       <div className="navbar-brand">LiteBill</div>
 
       <div className="navbar-nav">
-        <a href="#home" className="navbar-nav-link active">Dashboard</a>
-        <a href="#" className="navbar-nav-link">History</a>
+        <a href="#home" className={`navbar-nav-link ${isHome ? 'active' : ''}`}>Dashboard</a>
+        <a href="#history" className={`navbar-nav-link ${route === 'history' ? 'active' : ''}`}>History</a>
       </div>
 
       <div className="navbar-actions">

@@ -13,6 +13,7 @@ import { Documentation }     from './pages/Documentation'
 import { Privacy }           from './pages/Privacy'
 import { Terms }             from './pages/Terms'
 import { Support }           from './pages/Support'
+import { History }           from './pages/History'
 
 function App() {
   const { toasts, addToast, removeToast } = useToast()
@@ -46,6 +47,8 @@ function App() {
     content = <div className="animate-in"><Terms /></div>
   } else if (route === 'support') {
     content = <div className="animate-in"><Support /></div>
+  } else if (route === 'history') {
+    content = <div className="animate-in"><History getProviderContract={getProviderContract} walletAddress={walletAddress} /></div>
   } else {
     // Default Home view
     content = (
@@ -104,6 +107,7 @@ function App() {
           connecting={connecting}
           onConnect={connectWallet}
           onDisconnect={disconnectWallet}
+          route={route}
         />
       </ErrorBoundary>
 
