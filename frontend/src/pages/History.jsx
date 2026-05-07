@@ -74,8 +74,8 @@ export function History({ getProviderContract, walletAddress }) {
 
         if (active) setHistoryBills(pastBills)
       } catch (err) {
-        console.error(err)
-        if (active) setError('Failed to load history. Make sure you are connected to LitVM.')
+        console.error('fetchHistory error:', err)
+        if (active) setError(err.shortMessage || err.message || 'Failed to load history. Make sure you are connected to LiteForge')
       } finally {
         if (active) setLoading(false)
       }
