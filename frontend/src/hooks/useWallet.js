@@ -11,6 +11,22 @@ export function useWallet(addToast) {
   const [walletAddress, setWalletAddress] = useState('')
   const [connecting, setConnecting] = useState(false)
 
+  // ── Auto-connect on mount if already authorized ──────────────────
+  useEffect(() => {
+    if (!window.ethereum) return
+    const checkConnection = async () => {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' })
+        if (accounts && accounts.length > 0) {
+          setWalletAddress(accounts[0])
+        }
+      } catch (err) {
+        // silently ignore if check fails
+      }
+    }
+    checkConnection()
+  }, [])
+
   // ── Listen for account/chain changes from the wallet ─────────────
   useEffect(() => {
     if (!window.ethereum) return
