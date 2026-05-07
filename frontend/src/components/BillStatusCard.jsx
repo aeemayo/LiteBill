@@ -44,7 +44,7 @@ export function BillStatusCard({ bill, isListening }) {
       {/* Progress bar */}
       <div className="progress-wrap">
         <div className="progress-labels">
-          <span>{contrib} / {bill.totalAmount} LTC</span>
+          <span>{contrib} / {bill.totalAmount} zKLTC</span>
           <span>{bill.contributors}/{bill.participantCount} contributors</span>
         </div>
         <div className="progress-track">
@@ -59,9 +59,9 @@ export function BillStatusCard({ bill, isListening }) {
         {[
           ['Creator', shortAddr(bill.creator), false],
           ['Payee',   shortAddr(bill.payee),   false],
-          ['Total',   `${bill.totalAmount} LTC`, true],
-          ['Per share', `${bill.shareAmount} LTC`, false],
-          ['Contributed', `${bill.totalContributed} LTC`, false],
+          ['Total',       `${bill.totalAmount} zKLTC`,      true],
+          ['Per share',   `${bill.shareAmount} zKLTC`,      false],
+          ['Contributed', `${bill.totalContributed} zKLTC`, false],
           ['Expires', expiryStr, false],
         ].map(([lbl, val, accent]) => (
           <div className="bill-row" key={lbl}>
