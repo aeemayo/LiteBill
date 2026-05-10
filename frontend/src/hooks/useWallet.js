@@ -72,17 +72,24 @@ export function useWallet(addToast) {
         params: [{ chainId: chainHex }],
       })
     } catch (err) {
-      if (err.code === 4902) {
-        await window.ethereum.request({
-          method: 'wallet_addEthereumChain',
-          params: [{
-            chainId: chainHex,
-            chainName: LITVM_CHAIN.chainName,
-            nativeCurrency: LITVM_CHAIN.nativeCurrency,
-            rpcUrls: [LITVM_CHAIN.rpcUrl, LITVM_CHAIN.wsUrl].filter(Boolean),
-            blockExplorerUrls: [LITVM_CHAIN.explorerUrl],
-          }],
-        })
+      // 4902 indicates that the chain has not been added to MetaMask.
+      // We also fallback to adding the chain for any other error that isn't a user rejection (4001)
+      // to ensure network details are pre-added if the app can't detect it in the wallet.
+      if (err.code === 4902 || err.code !== 4001) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: chainHex,
+              chainName: LITVM_CHAIN.chainName,
+              nativeCurrency: LITVM_CHAIN.nativeCurrency,
+              rpcUrls: [LITVM_CHAIN.rpcUrl, LITVM_CHAIN.wsUrl].filter(Boolean),
+              blockExplorerUrls: [LITVM_CHAIN.explorerUrl],
+            }],
+          })
+        } catch (addErr) {
+          throw addErr
+        }
       } else {
         throw err
       }
