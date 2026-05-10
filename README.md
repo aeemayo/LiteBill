@@ -15,14 +15,13 @@ frontend/    → React + Vite UI
 
 ### Deploy the contract
 
-```bash
-cd contracts
-cp .env.example .env   # fill in your private key
-forge build
-forge test
-forge script script/DeployLiteBill.s.sol:DeployLiteBill \
-  --rpc-url $LITVM_RPC_URL --broadcast
-```
+1. Open [Remix IDE](https://remix.ethereum.org/).
+2. Create a new file `LiteBill.sol` and paste the contents of `contracts/contracts/LiteBill.sol`.
+3. Compile the contract using the Solidity Compiler tab.
+4. Go to the "Deploy & Run Transactions" tab.
+5. Set the Environment to **Injected Provider - MetaMask** and ensure your wallet is connected to the **LitVM LiteForge** network.
+6. Click **Deploy** and confirm the transaction in MetaMask.
+7. Once deployed, copy the deployed contract address.
 
 ### Run the frontend
 
