@@ -26,12 +26,15 @@ export function CreateBillCard({ onCreateBill, loading }) {
       return alert('Enter a valid participant count.')
     if (useExpiry && !expiresAt)
       return alert('Set an expiry date/time or disable the expiry toggle.')
-    onCreateBill({ payee, totalLtc, participantCount: participants, expiresAt: useExpiry ? expiresAt : null })
+    let finalExpiry = null;
+    if (useExpiry && expiresAt) {
+      finalExpiry = expiresAt.includes('T') ? expiresAt : `${expiresAt}T23:59:59`;
+    }
+    onCreateBill({ payee, totalLtc, participantCount: participants, expiresAt: finalExpiry })
   }
 
-  const [minDatetime] = useState(() => {
-    const d = new Date(Date.now() + 5 * 60 * 1000)
-    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+  const [minDate] = useState(() => {
+    return new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10)
   })
 
   return (
@@ -98,12 +101,12 @@ export function CreateBillCard({ onCreateBill, loading }) {
 
       {useExpiry && (
         <div className="field">
-          <label className="field-label" htmlFor="expiry-datetime">Expires At</label>
+          <label className="field-label" htmlFor="expiry-datetime">Expires At (End of Day)</label>
           <input
             id="expiry-datetime"
             className="field-input"
-            type="datetime-local"
-            min={minDatetime}
+            type="date"
+            min={minDate}
             value={expiresAt}
             onChange={(e) => setExpiresAt(e.target.value)}
           />
