@@ -17,7 +17,7 @@ export function CreateBillCard({ onCreateBill, loading }) {
     return null
   }, [totalLtc, participants])
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!payee || !ethers.isAddress(payee))
       return alert('Enter a valid payee address.')
     if (!totalLtc || Number(totalLtc) <= 0)
@@ -30,7 +30,14 @@ export function CreateBillCard({ onCreateBill, loading }) {
     if (useExpiry && expiresAt) {
       finalExpiry = expiresAt.includes('T') ? expiresAt : `${expiresAt}T23:59:59`;
     }
-    onCreateBill({ payee, totalLtc, participantCount: participants, expiresAt: finalExpiry })
+    const success = await onCreateBill({ payee, totalLtc, participantCount: participants, expiresAt: finalExpiry })
+    if (success) {
+      setPayee('')
+      setTotalLtc('')
+      setParticipants('')
+      setUseExpiry(false)
+      setExpiresAt('')
+    }
   }
 
   const [minDate] = useState(() => {

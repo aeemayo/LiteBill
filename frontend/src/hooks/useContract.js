@@ -89,8 +89,10 @@ export function useContract(getProviderContract, getSignerContract, addToast) {
 
       addToast({ type: 'success', msg: `Bill created${newId ? ` (ID: ${newId})` : ''}.`, txHash: tx.hash })
       if (newId) await fetchBill(newId)
+      return true
     } catch (err) {
       addToast({ type: 'error', msg: err.shortMessage || err.message })
+      return false
     } finally {
       setLoading(false)
     }
