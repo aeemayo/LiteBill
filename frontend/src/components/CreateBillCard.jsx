@@ -29,9 +29,10 @@ export function CreateBillCard({ onCreateBill, loading }) {
     onCreateBill({ payee, totalLtc, participantCount: participants, expiresAt: useExpiry ? expiresAt : null })
   }
 
-  const [minDatetime] = useState(
-    () => new Date(Date.now() + 5 * 60 * 1000).toISOString().slice(0, 16)
-  )
+  const [minDatetime] = useState(() => {
+    const d = new Date(Date.now() + 5 * 60 * 1000)
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+  })
 
   return (
     <div className="glass-card">
