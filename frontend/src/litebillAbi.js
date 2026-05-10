@@ -10,6 +10,5 @@ export const LITEBILL_ABI = [
   'event ContributionMade(uint256 indexed billId, address indexed contributor, uint256 amount)',
   'event BillSettled(uint256 indexed billId, uint256 settledAmount)',
   'event BillCancelled(uint256 indexed billId)',
-  'event RefundClaimed(uint256 indexed billId, address indexed contributor, uint256 amount)',
-  'function billCounter() external view returns (uint256)'
+  'event RefundClaimed(uint256 indexed billId, address indexed contributor, uint256 amount)'
 ]

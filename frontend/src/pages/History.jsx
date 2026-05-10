@@ -22,55 +22,57 @@ export function History({ getProviderContract, walletAddress }) {
       setError('')
       try {
         const { contract } = getProviderContract()
-        // 1. Get total number of bills
-        const counter = await contract.billCounter()
-        const totalBills = Number(counter)
+        // 1. Fetch BillCreated events where user is creator or payee
+        const createdFilter = contract.filters.BillCreated(null, walletAddress)
+        const payeeFilter = contract.filters.BillCreated(null, null, walletAddress)
+        
+        const [createdEvents, payeeEvents] = await Promise.all([
+          contract.queryFilter(createdFilter, 0, 'latest'),
+          contract.queryFilter(payeeFilter, 0, 'latest')
+        ])
 
-        if (totalBills === 0) {
+        const uniqueIds = [...new Set([...createdEvents, ...payeeEvents].map(e => e.args.billId.toString()))]
+
+        if (uniqueIds.length === 0) {
           if (active) setHistoryBills([])
           return
         }
 
-        // 2. Fetch all bills (in a real app, use an indexer like The Graph)
-        // Here we just fetch them all in parallel for simplicity
-        const promises = []
-        for (let i = 1; i <= totalBills; i++) {
-          promises.push(
-            Promise.all([
-              contract.getBillStatus(i).catch(() => null),
-              contract.getBillTiming(i).catch(() => null)
-            ]).then(([status, timing]) => {
-              if (!status || !timing) return null
-              return {
-                id: i,
-                creator: status[0],
-                payee: status[1],
-                totalAmount: ethers.formatEther(status[2]),
-                shareAmount: ethers.formatEther(status[3]),
-                totalContributed: ethers.formatEther(status[4]),
-                contributors: status[5].toString(),
-                participantCount: status[6].toString(),
-                settled: status[7],
-                expiresAt: Number(timing[0]),
-                cancelled: timing[1],
-                expired: timing[2],
-              }
-            })
-          )
-        }
+        // 2. Fetch all bills in parallel
+        const promises = uniqueIds.map(id => 
+          Promise.all([
+            contract.getBillStatus(id).catch(() => null),
+            contract.getBillTiming(id).catch(() => null)
+          ]).then(([status, timing]) => {
+            if (!status || !timing) return null
+            return {
+              id: id,
+              creator: status[0],
+              payee: status[1],
+              totalAmount: ethers.formatEther(status[2]),
+              shareAmount: ethers.formatEther(status[3]),
+              totalContributed: ethers.formatEther(status[4]),
+              contributors: status[5].toString(),
+              participantCount: status[6].toString(),
+              settled: status[7],
+              expiresAt: Number(timing[0]),
+              cancelled: timing[1],
+              expired: timing[2],
+            }
+          })
+        )
 
         const allBills = await Promise.all(promises)
         
         // 3. Filter for past/complete bills (settled, cancelled, or expired)
-        //    AND related to the current user (creator or payee)
         const pastBills = allBills
           .filter(b => b !== null)
           .filter(b => b.settled || b.cancelled || b.expired)
-          .filter(b => 
-            b.creator.toLowerCase() === walletAddress.toLowerCase() || 
-            b.payee.toLowerCase() === walletAddress.toLowerCase()
-          )
-          .sort((a, b) => b.id - a.id) // newest first
+          // sort descending by time, or just id as string comparison won't work perfectly for random IDs,
+          // but let's just sort alphabetically or leave it since it's random.
+          // Wait, sorting by ID won't represent time since they are random.
+          // The order of events is chronological, so we can just reverse the array!
+          .reverse()
 
         if (active) setHistoryBills(pastBills)
       } catch (err) {

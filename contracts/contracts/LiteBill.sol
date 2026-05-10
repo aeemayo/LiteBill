@@ -17,7 +17,7 @@ contract LiteBill is ReentrancyGuard {
         uint256 expiresAt;
     }
 
-    uint256 public billCounter;
+    uint256 private nonce;
 
     mapping(uint256 => Bill) public bills;
     mapping(uint256 => mapping(address => bool)) public hasContributed;
@@ -85,9 +85,16 @@ contract LiteBill is ReentrancyGuard {
 
         uint256 shareAmount = _totalAmount / _participantCount;
 
-        billCounter += 1;
+        uint256 uniqueId;
+        while (true) {
+            nonce++;
+            uniqueId = (uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, nonce))) % 9000) + 1000;
+            if (bills[uniqueId].creator == address(0)) {
+                break;
+            }
+        }
 
-        bills[billCounter] = Bill({
+        bills[uniqueId] = Bill({
             creator: msg.sender,
             payee: _payee,
             totalAmount: _totalAmount,
@@ -96,12 +103,12 @@ contract LiteBill is ReentrancyGuard {
             participantCount: _participantCount,
             contributors: 0,
             settled: false,
- cancelled: false,
+            cancelled: false,
             expiresAt: _expiresAt
         });
 
         emit BillCreated(
-            billCounter,
+            uniqueId,
             msg.sender,
             _payee,
             _totalAmount,
@@ -109,7 +116,7 @@ contract LiteBill is ReentrancyGuard {
             _participantCount
         );
 
-        return billCounter;
+        return uniqueId;
     }
 
     function contribute(uint256 _billId) external payable nonReentrant {
