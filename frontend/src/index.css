@@ -306,6 +306,12 @@ body {
   box-shadow: 0 0 15px rgba(68, 226, 205, 0.2);
 }
 
+input[type="date"].field-input {
+  -webkit-appearance: auto;
+  appearance: auto;
+  color-scheme: dark;
+}
+
 .field-hint {
   font-size: 0.78rem;
   color: var(--outline);
