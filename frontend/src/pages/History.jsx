@@ -114,7 +114,7 @@ export function History({ getProviderContract, walletAddress }) {
             let badgeClass = ''
             if (bill.settled) { stateLabel = 'Settled'; badgeClass = 'badge-settled' }
             else if (bill.cancelled) { stateLabel = 'Cancelled'; badgeClass = 'badge-cancelled' }
-            else if (bill.expired) { stateLabel = 'Expired'; badgeClass = 'badge-expired' }
+            else if (bill.expired) { stateLabel = 'Deadline Passed'; badgeClass = 'badge-expired' }
 
             return (
               <div key={bill.id} style={{

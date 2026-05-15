@@ -1,10 +1,12 @@
-function getState(bill) {
-  if (bill.settled)   return 'settled'
-  if (bill.cancelled) return 'cancelled'
-  if (bill.expired)   return 'expired'
+import { useState, useEffect } from 'react'
+
+function getState(bill, clientExpired) {
+  if (bill.settled)                return 'settled'
+  if (bill.cancelled)              return 'cancelled'
+  if (bill.expired || clientExpired) return 'expired'
   return 'open'
 }
-const STATE_LABEL = { open: 'Open', settled: 'Settled', cancelled: 'Cancelled', expired: 'Expired' }
+const STATE_LABEL = { open: 'Open', settled: 'Settled', cancelled: 'Cancelled', expired: 'Deadline Passed' }
 
 function shortAddr(addr) {
   if (!addr) return '—'
@@ -14,7 +16,26 @@ function shortAddr(addr) {
 export function BillStatusCard({ bill, isListening }) {
   if (!bill) return null
 
-  const state   = getState(bill)
+  // ── Client-side expiry detection ────────────────────────────
+  const [clientExpired, setClientExpired] = useState(false)
+
+  useEffect(() => {
+    setClientExpired(false)
+    if (!bill.expiresAt || bill.settled || bill.cancelled || bill.expired) return
+
+    const expiryMs = bill.expiresAt * 1000
+    const remaining = expiryMs - Date.now()
+
+    if (remaining <= 0) {
+      setClientExpired(true)
+      return
+    }
+
+    const timer = setTimeout(() => setClientExpired(true), remaining)
+    return () => clearTimeout(timer)
+  }, [bill])
+
+  const state   = getState(bill, clientExpired)
   const contrib = Number(bill.totalContributed)
   const total   = Number(bill.totalAmount)
   const pct     = total > 0 ? Math.min((contrib / total) * 100, 100) : 0
@@ -31,7 +52,7 @@ export function BillStatusCard({ bill, isListening }) {
         </div>
         <div className="bill-header-badges">
           <span className={`badge badge-${state}`}>{STATE_LABEL[state]}</span>
-          {isListening && (
+          {isListening && state === 'open' && (
             <span className="live-indicator">
               <span className="live-dot" /> LIVE
             </span>
