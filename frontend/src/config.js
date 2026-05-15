@@ -11,6 +11,10 @@ export const LITVM_CHAIN = {
   },
 }
 
+export const HISTORY_LOOKBACK_BLOCKS = Number(
+  import.meta.env.VITE_HISTORY_LOOKBACK_BLOCKS || 200000
+)
+
 export function getExplorerTxUrl(txHash) {
   return `${LITVM_CHAIN.explorerUrl}/tx/${txHash}`
 }

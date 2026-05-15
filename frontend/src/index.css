@@ -72,8 +72,8 @@ body {
   padding: 0 var(--sp-6);
   height: 80px;
   background: rgba(22, 17, 27, 0.85);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(77, 67, 84, 0.2);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
@@ -345,6 +345,8 @@ input[type="date"].field-input {
   padding: var(--sp-2) 0;
   border-bottom: 1px solid rgba(77, 67, 84, 0.3);
   cursor: pointer;
+  -webkit-user-select: none;
+  -ms-user-select: none;
   user-select: none;
 }
 .toggle-label { font-size: 16px; color: var(--text-muted); }

@@ -15,9 +15,12 @@ contract LiteBill is ReentrancyGuard {
         bool settled;
         bool cancelled;
         uint256 expiresAt;
+        bool payoutPending;
+        uint256 settlementFailedAt;
     }
 
-    uint256 private nonce;
+    uint256 public constant SETTLEMENT_GRACE = 3 days;
+    uint256 public nextBillId = 1000;
 
     mapping(uint256 => Bill) public bills;
     mapping(uint256 => mapping(address => bool)) public hasContributed;
@@ -39,6 +42,7 @@ contract LiteBill is ReentrancyGuard {
     );
 
     event BillSettled(uint256 indexed billId, uint256 settledAmount);
+    event BillSettlementFailed(uint256 indexed billId, uint256 pendingAmount);
     event BillCancelled(uint256 indexed billId);
     event RefundClaimed(
         uint256 indexed billId,
@@ -85,14 +89,8 @@ contract LiteBill is ReentrancyGuard {
 
         uint256 shareAmount = _totalAmount / _participantCount;
 
-        uint256 uniqueId;
-        while (true) {
-            nonce++;
-            uniqueId = (uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, nonce))) % 9000) + 1000;
-            if (bills[uniqueId].creator == address(0)) {
-                break;
-            }
-        }
+        uint256 uniqueId = nextBillId;
+        nextBillId += 1;
 
         bills[uniqueId] = Bill({
             creator: msg.sender,
@@ -104,7 +102,9 @@ contract LiteBill is ReentrancyGuard {
             contributors: 0,
             settled: false,
             cancelled: false,
-            expiresAt: _expiresAt
+            expiresAt: _expiresAt,
+            payoutPending: false,
+            settlementFailedAt: 0
         });
 
         emit BillCreated(
@@ -141,11 +141,17 @@ contract LiteBill is ReentrancyGuard {
             bill.totalContributed == bill.totalAmount &&
             bill.contributors == bill.participantCount
         ) {
-            bill.settled = true;
             uint256 payout = bill.totalContributed;
-            emit BillSettled(_billId, payout);
             (bool sent, ) = bill.payee.call{value: payout}("");
-            require(sent, "Payout failed");
+            if (sent) {
+                bill.settled = true;
+                bill.payoutPending = false;
+                emit BillSettled(_billId, payout);
+            } else {
+                bill.payoutPending = true;
+                bill.settlementFailedAt = block.timestamp;
+                emit BillSettlementFailed(_billId, payout);
+            }
         }
     }
 
@@ -157,14 +163,37 @@ contract LiteBill is ReentrancyGuard {
         require(!bill.cancelled, "Bill already cancelled");
 
         bill.cancelled = true;
+        bill.payoutPending = false;
         emit BillCancelled(_billId);
+    }
+
+    function retryPayout(uint256 _billId) external nonReentrant {
+        Bill storage bill = bills[_billId];
+        require(bill.creator != address(0), "Bill not found");
+        require(!bill.settled, "Bill already settled");
+        require(!bill.cancelled, "Bill cancelled");
+        require(bill.payoutPending, "No payout pending");
+        require(bill.totalContributed == bill.totalAmount, "Not fully funded");
+
+        uint256 payout = bill.totalContributed;
+        (bool sent, ) = bill.payee.call{value: payout}("");
+        if (sent) {
+            bill.settled = true;
+            bill.payoutPending = false;
+            emit BillSettled(_billId, payout);
+        } else if (bill.settlementFailedAt == 0) {
+            bill.settlementFailedAt = block.timestamp;
+        }
     }
 
     function claimRefund(uint256 _billId) external nonReentrant {
         Bill storage bill = bills[_billId];
         require(bill.creator != address(0), "Bill not found");
         require(!bill.settled, "Bill already settled");
-        require(bill.cancelled || _isExpired(bill), "Railable");
+        require(
+            bill.cancelled || _isExpired(bill) || _isSettlementTimedOut(bill),
+            "Refunds unavailable"
+        );
 
         uint256 amount = contributionAmounts[_billId][msg.sender];
         require(amount > 0, "No contribution to refund");
@@ -172,6 +201,9 @@ contract LiteBill is ReentrancyGuard {
         contributionAmounts[_billId][msg.sender] = 0;
         bill.totalContributed -= amount;
         bill.contributors -= 1;
+        if (bill.totalContributed < bill.totalAmount) {
+            bill.payoutPending = false;
+        }
 
         emit RefundClaimed(_billId, msg.sender, amount);
         (bool sent, ) = payable(msg.sender).call{value: amount}("");
@@ -190,6 +222,13 @@ contract LiteBill is ReentrancyGuard {
 
     function _isExpired(Bill memory bill) internal view returns (bool) {
         return bill.expiresAt != 0 && block.timestamp >= bill.expiresAt;
+    }
+
+    function _isSettlementTimedOut(Bill memory bill) internal view returns (bool) {
+        return
+            bill.payoutPending &&
+            bill.settlementFailedAt != 0 &&
+            block.timestamp >= bill.settlementFailedAt + SETTLEMENT_GRACE;
     }
 
     function getBillStatus(uint256 _billId)

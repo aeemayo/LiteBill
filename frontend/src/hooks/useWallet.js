@@ -59,6 +59,10 @@ export function useWallet(addToast) {
     if (!window.ethereum) throw new Error('No browser wallet detected. Please install MetaMask.')
     if (!CONTRACT_ADDRESS || !ethers.isAddress(CONTRACT_ADDRESS))
       throw new Error('LiteBill contract address is not configured. Set VITE_LITEBILL_ADDRESS in .env and rebuild.')
+    const expectedChainId = `0x${LITVM_CHAIN.chainId.toString(16)}`
+    if (window.ethereum.chainId && window.ethereum.chainId !== expectedChainId) {
+      throw new Error(`Wrong network. Please switch to ${LITVM_CHAIN.chainName}.`)
+    }
     const provider = new ethers.BrowserProvider(window.ethereum)
     const contract = new ethers.Contract(CONTRACT_ADDRESS, LITEBILL_ABI, provider)
     return { provider, contract }
@@ -102,6 +106,10 @@ export function useWallet(addToast) {
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
     if (!accounts || accounts.length === 0) throw new Error('No accounts returned from wallet.')
     await switchToLitvm()
+    const expectedChainId = `0x${LITVM_CHAIN.chainId.toString(16)}`
+    if (window.ethereum.chainId && window.ethereum.chainId !== expectedChainId) {
+      throw new Error(`Wrong network. Please switch to ${LITVM_CHAIN.chainName}.`)
+    }
     const provider = new ethers.BrowserProvider(window.ethereum)
     const signer = await provider.getSigner()
     const contract = new ethers.Contract(CONTRACT_ADDRESS, LITEBILL_ABI, signer)

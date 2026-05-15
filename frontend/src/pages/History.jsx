@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
+import { HISTORY_LOOKBACK_BLOCKS } from '../config'
 
 function shortAddr(addr) {
   if (!addr) return '—'
@@ -21,14 +22,16 @@ export function History({ getProviderContract, walletAddress }) {
       setLoading(true)
       setError('')
       try {
-        const { contract } = getProviderContract()
+        const { contract, provider } = getProviderContract()
+        const currentBlock = await provider.getBlockNumber()
+        const fromBlock = Math.max(currentBlock - HISTORY_LOOKBACK_BLOCKS, 0)
         // 1. Fetch BillCreated events where user is creator or payee
         const createdFilter = contract.filters.BillCreated(null, walletAddress)
         const payeeFilter = contract.filters.BillCreated(null, null, walletAddress)
         
         const [createdEvents, payeeEvents] = await Promise.all([
-          contract.queryFilter(createdFilter, 0, 'latest'),
-          contract.queryFilter(payeeFilter, 0, 'latest')
+          contract.queryFilter(createdFilter, fromBlock, 'latest'),
+          contract.queryFilter(payeeFilter, fromBlock, 'latest')
         ])
 
         const uniqueIds = [...new Set([...createdEvents, ...payeeEvents].map(e => e.args.billId.toString()))]
