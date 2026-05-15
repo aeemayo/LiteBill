@@ -28,13 +28,20 @@ export function History({ getProviderContract, walletAddress }) {
         // 1. Fetch BillCreated events where user is creator or payee
         const createdFilter = contract.filters.BillCreated(null, walletAddress)
         const payeeFilter = contract.filters.BillCreated(null, null, walletAddress)
+        // Also find bills the user contributed to
+        const contributedFilter = contract.filters.ContributionMade(null, walletAddress)
         
-        const [createdEvents, payeeEvents] = await Promise.all([
+        const [createdEvents, payeeEvents, contributedEvents] = await Promise.all([
           contract.queryFilter(createdFilter, fromBlock, 'latest'),
-          contract.queryFilter(payeeFilter, fromBlock, 'latest')
+          contract.queryFilter(payeeFilter, fromBlock, 'latest'),
+          contract.queryFilter(contributedFilter, fromBlock, 'latest')
         ])
 
-        const uniqueIds = [...new Set([...createdEvents, ...payeeEvents].map(e => e.args.billId.toString()))]
+        const uniqueIds = [...new Set([
+          ...createdEvents.map(e => e.args.billId.toString()),
+          ...payeeEvents.map(e => e.args.billId.toString()),
+          ...contributedEvents.map(e => e.args.billId.toString())
+        ])]
 
         if (uniqueIds.length === 0) {
           if (active) setHistoryBills([])
@@ -67,17 +74,12 @@ export function History({ getProviderContract, walletAddress }) {
 
         const allBills = await Promise.all(promises)
         
-        // 3. Filter for past/complete bills (settled, cancelled, or expired)
-        const pastBills = allBills
+        // 3. Show all bills related to the user (newest first based on event order)
+        const userBills = allBills
           .filter(b => b !== null)
-          .filter(b => b.settled || b.cancelled || b.expired)
-          // sort descending by time, or just id as string comparison won't work perfectly for random IDs,
-          // but let's just sort alphabetically or leave it since it's random.
-          // Wait, sorting by ID won't represent time since they are random.
-          // The order of events is chronological, so we can just reverse the array!
           .reverse()
 
-        if (active) setHistoryBills(pastBills)
+        if (active) setHistoryBills(userBills)
       } catch (err) {
         console.error('fetchHistory error:', err)
         if (active) setError(err.shortMessage || err.message || 'Failed to load history. Make sure you are connected to LiteForge')
@@ -108,13 +110,13 @@ export function History({ getProviderContract, walletAddress }) {
         </div>
       ) : historyBills.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-          No completed, cancelled, or expired bills found for your address.
+          No bills found for your address.
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {historyBills.map(bill => {
-            let stateLabel = ''
-            let badgeClass = ''
+            let stateLabel = 'Open'
+            let badgeClass = 'badge-open'
             if (bill.settled) { stateLabel = 'Settled'; badgeClass = 'badge-settled' }
             else if (bill.cancelled) { stateLabel = 'Cancelled'; badgeClass = 'badge-cancelled' }
             else if (bill.expired) { stateLabel = 'Deadline Passed'; badgeClass = 'badge-expired' }
@@ -141,7 +143,7 @@ export function History({ getProviderContract, walletAddress }) {
                 </div>
                 <button 
                   className="btn btn-outline-teal"
-                  onClick={() => window.location.hash = `#?billId=${bill.id}`}
+                  onClick={() => { window.location.hash = 'home'; window.location.search = `?billId=${bill.id}` }}
                   style={{ padding: '0.5rem 1rem', fontSize: '11px' }}
                 >
                   View
